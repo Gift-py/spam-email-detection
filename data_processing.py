@@ -40,16 +40,18 @@ def email_to_plain(email):
     struct = get_email_structure(email)
     for part in email.walk():
         part_content_type = part.get_content_type()
-        if part_content_type not in ['text/plain', 'test/html']:
+        if part_content_type not in ['text/plain', 'text/html']:
             continue 
         try:
             part_content = part.get_content()
         except:  #in case of encoding issues
             part_content = str(part.get_payload())
         if part_content_type == 'text/plain':
-            return part_content 
+            text = part_content
+            return text 
         else:
-            return html_to_plain(part)
+            text = html_to_plain(part)
+            return text
 
 class EmailToWords(BaseEstimator, TransformerMixin):
     def __init__(self, stripHeaders=True, lowercaseConversion=True, punctuationRemoval=True, urlReplace=True, numberReplacement=True, stemming=True):
@@ -112,9 +114,6 @@ class WordCountToVector(BaseEstimator, TransformerMixin):
                 rows.append(row)
                 cols.append(self.vocabulary_.get(word, 0))
                 data.append(count)
-        print(len(data))
-        print(len(rows))
-        print(len(cols))
         return csr_matrix((data, (rows, cols)), shape=(len(X), self.vocabulary_size + 1))
 
 
@@ -134,7 +133,10 @@ def predict_spam(data):
     result = model.predict(augmented_data)
     return result
 
-j = "spam/0001.bfc8d64d12b325ff385cca8d07b84288", "ham/0001.ea7e79d3153e7469e7a9c3e0af6a357e"
-data = load_email("Oops! That last email was a mistake, but happy holidays..eml")
+data = load_email("🏆Win Big with 3,333$ F.R.E.E and 33 Spins at our Casino!🃏-67.eml")
 result = predict_spam(data)
-print(result)
+if result == 0:
+    print('not spam')
+else:
+    print('spam')
+
